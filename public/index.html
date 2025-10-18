@@ -4,8 +4,86 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Task App</title>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      background: #f9fafb;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      margin: 0;
+      padding-top: 60px;
+      color: #222;
+    }
+
+    .container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+      width: 100%;
+      max-width: 400px;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
+
+    button {
+      padding: 10px 15px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:hover {
+      background: #1e4ed8;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0 0;
+    }
+
+    li {
+      background: #f3f4f6;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    li button {
+      background: #e5e7eb;
+      color: #111;
+      font-size: 13px;
+      margin-left: 5px;
+    }
+
+    li button:hover {
+      background: #d1d5db;
+    }
+  </style>
 </head>
 <body>
+  <div class="container">
 <h1>Task Manager</h1>
 
 <div id="auth">
@@ -14,14 +92,47 @@
   <button onclick="login()">Login</button>
 </div>
 
+<!--    <p id="status"></p>-->
+
 <div id="tasks" style="display:none;">
   <input id="title" placeholder="New task" />
   <button onclick="createTask()">Add Task</button>
   <ul id="taskList"></ul>
 </div>
+  </div>
 
 <script>
-  let token = "";
+
+  let token = localStorage.getItem("token") || "";
+
+  window.addEventListener("DOMContentLoaded", async () => {
+    if (!token) return;
+
+    try {
+      const res = await fetch("/api/auth/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      console.log(res);
+
+      if (!res.ok) return ("Invalid token");
+
+      const user = await res.json();
+      document.getElementById("auth").style.display = "none";
+      document.getElementById("tasks").style.display = "block";
+
+      // // Optional: show logged-in user
+      // const userInfo = document.getElementById("status");
+      // userInfo.textContent = `Logged in as ${user.email}`;
+
+      //document.body.insertBefore(userInfo, document.getElementById("tasks"));
+      await getTasks();
+    } catch (err) {
+      console.log(err);
+      logout(); // bad token, force re-login
+    }
+  });
+
 
   async function login() {
     const email = document.getElementById("email").value;
@@ -37,6 +148,7 @@
     token = data.token;
 
     if (token) {
+      localStorage.setItem("token", token);
       document.getElementById("auth").style.display = "none";
       document.getElementById("tasks").style.display = "block";
       getTasks();
@@ -57,22 +169,28 @@
     tasks.forEach((t) => {
       const li = document.createElement("li");
       li.textContent = t.title + (t.completed ? " ✅" : "");
-      // Complete button
+
+      const btns = document.createElement("div");
+
       const completeBtn = document.createElement("button");
       completeBtn.textContent = t.completed ? "Undo" : "Complete";
-      completeBtn.style.marginLeft = "10px";
       completeBtn.onclick = () => toggleComplete(t._id, !t.completed);
 
-      // Delete button
       const deleteBtn = document.createElement("button");
       deleteBtn.textContent = "Delete";
-      deleteBtn.style.marginLeft = "5px";
       deleteBtn.onclick = () => deleteTask(t._id);
 
-      li.appendChild(completeBtn);
-      li.appendChild(deleteBtn);
+      btns.appendChild(completeBtn);
+      btns.appendChild(deleteBtn);
+      li.appendChild(btns);
       list.appendChild(li);
     });
+
+    const logoutBtn = document.createElement("button");
+    logoutBtn.textContent = "Logout";
+    logoutBtn.style.marginTop = "10px";
+    logoutBtn.onclick = logout;
+    list.appendChild(logoutBtn);
   }
 
   async function createTask() {
@@ -88,7 +206,7 @@
       body: JSON.stringify({ title }),
     });
 
-    document.getElementById("title").value = ""; // clear input
+      document.getElementById("title").value = "";
     getTasks();
   }
 
@@ -101,7 +219,7 @@
       },
       body: JSON.stringify({ completed }),
     });
-    getTasks(); // refresh list
+      getTasks();
   }
 
   async function deleteTask(id) {
@@ -109,11 +227,15 @@
       method: "DELETE",
       headers: { Authorization: `Bearer ${token}` },
     });
-    getTasks(); // refresh list
+      getTasks();
   }
 
-
-
+  function logout() {
+    localStorage.removeItem("token");
+    token = "";
+    document.getElementById("auth").style.display = "block";
+    document.getElementById("tasks").style.display = "none";
+  }
 </script>
 </body>
 </html>
