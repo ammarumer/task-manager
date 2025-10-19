@@ -83,23 +83,21 @@
   </style>
 </head>
 <body>
-  <div class="container">
-<h1>Task Manager</h1>
+<div class="container">
+  <h1>Task Manager</h1>
 
-<div id="auth">
-  <input id="email" placeholder="Email" />
-  <input id="password" placeholder="Password" type="password" />
-  <button onclick="login()">Login</button>
-</div>
-
-<!--    <p id="status"></p>-->
-
-<div id="tasks" style="display:none;">
-  <input id="title" placeholder="New task" />
-  <button onclick="createTask()">Add Task</button>
-  <ul id="taskList"></ul>
-</div>
+  <div id="auth">
+    <input id="email" placeholder="Email"/>
+    <input id="password" placeholder="Password" type="password"/>
+    <button onclick="login()">Login</button>
   </div>
+
+  <div id="tasks" style="display:none;">
+    <input id="title" placeholder="New task"/>
+    <button onclick="createTask()">Add Task</button>
+    <ul id="taskList"></ul>
+  </div>
+</div>
 
 <script>
 

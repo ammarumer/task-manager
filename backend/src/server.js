@@ -12,9 +12,11 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Serve frontend
-app.use(express.static(path.join(__dirname, "../public"))); // <-- note ../public
+// // Serve frontend
+// app.use(express.static(path.join(__dirname, "../public"))); // <-- note ../public
 
+// Serve React build for production
+app.use(express.static(path.join(__dirname, "../../frontend/dist")));
 app.use(express.json());
 
 // // Allow all origins (simple test)
@@ -25,18 +27,23 @@ app.use(express.json());
 // Connect DB
 connectDB();
 
+//
+// app.get("/", (req, res) => {
+//     res.sendFile(path.join(__dirname, "../public/index.html"));
+// });
 
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "../public/index.html"));
+app.use("/api/auth", authRoutes);
+app.use("/api/tasks", taskRoutes);
+
+
+// Fallback: any other route returns index.html
+app.get(/.*/, (req, res) => {
+    res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
 });
 
 // app.get("/", (req, res) => {
 //     res.send("API is running...");
 // });
-
-app.use("/api/auth", authRoutes);
-
-app.use("/api/tasks", taskRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
