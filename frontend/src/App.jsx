@@ -95,18 +95,20 @@ function App() {
         return (
             <div className="login">
                 <h2>Login</h2>
-                <input
-                    placeholder="Email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                />
-                <input
-                    placeholder="Password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                />
-                <button onClick={login}>Login</button>
+                <div className="login__form">
+                    <input
+                        placeholder="Email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                    <input
+                        placeholder="Password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                    <button onClick={login}>Login</button>
+                </div>
             </div>
         );
     }
@@ -126,10 +128,12 @@ function App() {
                 {tasks.map((t) => (
                     <li key={t._id}>
                         {t.title} {t.completed ? "✅" : ""}
+                        <div className="buttons">
                         <button onClick={() => toggleComplete(t._id, !t.completed)}>
                             {t.completed ? "Undo" : "Complete"}
                         </button>
                         <button onClick={() => deleteTask(t._id)}>Delete</button>
+                        </div>
                     </li>
                 ))}
             </ul>

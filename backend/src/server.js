@@ -7,10 +7,13 @@ import taskRoutes from "./routes/taskRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
-dotenv.config();
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+const __envfile = path.join(__dirname, "../.env");
+dotenv.config({path: __envfile , debug: true});
+
+import sendEmail from "./config/emailService.js";
 
 // // Serve frontend
 // app.use(express.static(path.join(__dirname, "../public"))); // <-- note ../public
@@ -44,6 +47,18 @@ app.get(/.*/, (req, res) => {
 // app.get("/", (req, res) => {
 //     res.send("API is running...");
 // });
+
+app.post("/send-email", async (req, res) => {
+    try {
+        const { to, subject, text } = req.body;
+        const info = await sendEmail(to, subject, text);
+        res.json({ success: true, messageId: info.messageId });
+    } catch (err) {
+        console.error("Email error:", err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
